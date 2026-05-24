@@ -1,211 +1,115 @@
-SafeDrive AI 
+# SafeDrive AI
 
 SafeDrive AI is a real-time driver drowsiness detection system that I built using Flutter, Google ML Kit, Arduino, and Bluetooth communication.
 
-The main idea behind the project is to monitor the driver’s eyes using the phone’s front camera. If the system detects that the driver’s eyes are closed for a dangerous amount of time, it sends a wireless signal to an Arduino-based alert system connected to a buzzer and vehicle warning lights.
+The idea behind the project is simple: monitor the driver’s eyes using the phone’s front camera and detect dangerous eye closure in real time. If the system determines that the driver may be falling asleep, it sends a wireless signal to an Arduino-based alert system connected to a buzzer and vehicle warning lights.
 
-I wanted this project to combine multiple areas that I’m interested in:
+I wanted this project to combine multiple areas that I’m interested in, including:
 
-Mobile Development
-Artificial Intelligence
-Computer Vision
-Embedded Systems
-Real-time Processing
+- Mobile Development
+- Artificial Intelligence
+- Computer Vision
+- Embedded Systems
+- Real-time Processing
 
 instead of building a normal standalone AI model.
 
- Demo & Project Links
-YouTube Demo
+---
 
-Watch the Project Demo
+# How the System Works
 
-LinkedIn Project Post
+The Flutter application continuously captures image frames from the phone’s front camera using the `camera` package.
 
-View the LinkedIn Project Post
+Each frame is processed using Google ML Kit Face Detection. The AI model analyzes the driver’s face and calculates the probability of both eyes being open.
 
- Mobile Application Side
+The system uses:
 
-The mobile application was developed using Flutter.
+- `leftEyeOpenProbability`
+- `rightEyeOpenProbability`
 
-The app uses the smartphone’s front camera and continuously processes image frames in real time instead of recording traditional video.
+If both values fall below a specific threshold, the application considers the eyes closed and sends a signal through Bluetooth to the Arduino system.
 
-Using:
+To avoid false alarms caused by normal blinking, the Arduino uses a timing and counter-based filtering algorithm. The alert is only triggered after receiving multiple continuous sleep signals within a limited time window.
 
-startImageStream()
+Once the condition is confirmed, the Arduino activates:
 
-the camera feed is converted into live frames that are processed directly by the AI engine.
+- A buzzer alarm
+- Vehicle warning lights using a relay module
 
-Each frame is transformed into an InputImage object and passed to Google ML Kit Face Detection.
+This creates both an audio and visual warning system.
 
-The system analyzes:
+---
 
-facial landmarks
-eye positions
-eye opening probability
+# Technologies Used
 
-The core logic depends on:
+## Mobile Application
+- Flutter
+- Dart
 
-leftEyeOpenProbability
-rightEyeOpenProbability
+## AI & Computer Vision
+- Google ML Kit Face Detection
 
-The values range between:
+## Hardware
+- Arduino Uno
+- HC-05 Bluetooth Module
+- Relay Module
+- Buzzer
 
-0.0 → fully closed eye
-1.0 → fully open eye
+## Communication
+- Bluetooth Serial Communication
 
-If both eyes remain mostly closed:
+---
 
-if(leftEye < 0.3 && rightEye < 0.3)
+# Main Files Included
 
-the application considers the situation as possible drowsiness and sends a warning signal.
+This repository contains the main core files used in the project:
 
-If no face is detected, the app automatically resets the warning state to reduce false detections.
+- `main.dart`
+- `build.gradle.kts`
+- `app_build.gradle.kts`
+- `SafeDrive_Arduino.ino`
 
- AI & Computer Vision Logic
+---
 
-The project uses Google ML Kit’s face detection system, which internally relies on deep learning models trained for facial analysis and eye classification.
+# Features
 
-The AI model estimates whether the eyes are:
+- Real-time eye monitoring
+- Drowsiness detection using AI
+- Wireless communication between phone and Arduino
+- Smart filtering to reduce false positives
+- Audio and light alert system
+- Real-time camera processing
 
-open
-partially closed
-fully closed
+---
 
-This allows the application to make real-time decisions directly on the phone without needing cloud processing.
+# Build APK
 
-One thing I focused on was keeping the processing lightweight enough to run continuously on a mobile device while still maintaining stable detection performance.
+The release APK was generated using:
 
- Bluetooth Communication
-
-The application communicates wirelessly with an HC-05 Bluetooth module using:
-
-flutter_bluetooth_serial
-
-The connection works as a serial communication channel between the phone and the Arduino.
-
-The app sends:
-
-'1' → drowsiness detected
-'0' → driver is awake
-
-These values are transmitted through Bluetooth and received by the Arduino board in real time.
-
- Arduino Side
-
-The Arduino continuously listens for incoming serial data from the HC-05 module.
-
-One important challenge in this project was avoiding false alarms caused by normal eye blinking.
-
-A normal human blink only lasts for a fraction of a second, so activating the alarm immediately after receiving one warning signal would create many false positives.
-
-To solve this, I implemented a filtering mechanism using:
-
-a counter
-timing validation
-
-The Arduino only triggers the alarm after receiving multiple continuous warning signals within a short period of time.
-
-This makes the system significantly more stable and practical for real-world usage.
-
- Alert & Hardware System
-
-When the warning threshold is reached:
-
-the buzzer activates
-the relay turns on
-external warning lights can flash
-
-The hardware side was designed with protection in mind using:
-
-relay isolation
-diode protection
-fused vehicle power input
-
-The warning system can also be connected to vehicle hazard lights safely without interfering with the original electrical wiring.
-
- Vehicle Electrical Integration
-
-To safely control both left and right vehicle indicators, the project uses a dual-diode isolation setup.
-
-This prevents electrical feedback between both signal lines and protects the original vehicle wiring system.
-
-I used high-current diodes such as:
-
-1N5408
-
-to ensure safe current flow toward both indicators without back-feeding current into the opposite direction.
-
- APK Build Process
-
-The Android APK was generated using:
-
+```bash
 flutter build apk --release
+```
 
-The release build compiles Dart code into optimized native ARM binaries for smoother real-time performance and lower latency during camera processing.
+The project also includes Gradle configuration files required for Flutter Android builds.
 
- Android Permissions
+---
 
-The application requires access to:
+# Demo Video
 
-Camera
-Bluetooth
-Nearby devices
+YouTube Demo:
+https://youtu.be/uoXS8Cu0Rs4?si=LazIkaRiVDLrga2_
 
-Main permissions include:
+---
 
-android.permission.CAMERA
-android.permission.BLUETOOTH_CONNECT
-android.permission.BLUETOOTH_ADMIN
- Technologies Used
-Mobile Development
-Flutter
-Dart
-AI & Computer Vision
-Google ML Kit Face Detection
-Embedded Systems
-Arduino Uno
-HC-05 Bluetooth Module
-Relay Module
-Piezoelectric Buzzer
-Electrical Components
-1N5408 Diodes
-Fuse Protection
-Vehicle 12V Integration
- Flutter Packages
-camera: ^0.10.5
-google_mlkit_face_detection: ^0.11.0
-flutter_bluetooth_serial: ^0.4.0
- Files Included
-main.dart
-build.gradle.kts
-safedrive_arduino.ino
-README.md
- Features
-Real-time driver monitoring
-AI-based eye-state detection
-Real-time camera frame processing
-Bluetooth communication with Arduino
-Hardware-based alert system
-False-alarm filtering logic
-Relay and buzzer activation
-Vehicle warning light integration
- Future Improvements
+# LinkedIn Post
 
-Some improvements I would like to work on in the future:
+Project Post:
+https://www.linkedin.com/posts/%D8%A7%D8%AD%D9%85%D8%AF-%D8%A7%D9%84%D8%AD%D9%83%D9%8A%D9%85%D9%8A-833380344_computervision-flutter-artificialintelligence-ugcPost-7463650859915046912-4-Cj
 
-TensorFlow Lite custom models
-Head pose estimation
-Night vision support
-GPS emergency notifications
-Fatigue analytics dashboard
-Edge AI optimization
- About Me
+---
 
-I’m an Artificial Intelligence Engineering student interested in:
+# Notes
 
-Computer Vision
-Embedded Systems
-Robotics
-AI-powered mobile applications
+This project was built as a practical learning experience to better understand how AI models can interact with embedded systems and real-world hardware in real time.
 
-I enjoy building projects that combine software and hardware into practical real-world systems.
+The main focus was not only detecting drowsiness, but also building a complete end-to-end system that combines software, AI, and electronics together.
